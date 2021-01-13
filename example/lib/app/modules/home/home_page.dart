@@ -14,7 +14,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends ModularState<HomePage, HomeController> {
-  //use 'controller' variable to access controller
   OverlayState _overlayState;
   OverlayEntry _detailsOverlayEntry;
 
@@ -23,113 +22,73 @@ class _HomePageState extends ModularState<HomePage, HomeController> {
     _overlayState = Overlay.of(context);
     super.initState();
   }
+
   @override
   Widget build(BuildContext context) {
-    return PictureInPicture(
-      builder: (context, isFloating) {
-        return Scaffold(
-          body: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text('This is the screen that will float!'),
-              MaterialButton(
-                child: Text('Start floating'),
-                color: Colors.red,
-                onPressed: () {
-                  PictureInPicture.of(context).startFloating(Container());
-                },
-              ),
-              MaterialButton(
-                child: Text('close'),
-                color: Colors.red,
-                onPressed: () {
-                  _detailsOverlayEntry.remove();
-                  // Navigator.pop(context);
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-
     return Scaffold(
       appBar: AppBar(
-        title: Text("Start"),
+        title: Text("HOME"),
       ),
       body: Column(
+        mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           FlatButton(
-            onPressed: () {
-              _detailsOverlayEntry = OverlayEntry(builder: (context) {
-                return PictureInPicture(
-                  builder: (context, isFloating) {
-                    return Scaffold(
-                      body: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Text('This is the screen that will float!'),
-                          MaterialButton(
-                            child: Text('Start floating'),
-                            color: Colors.red,
-                            onPressed: () {
-                              PictureInPicture.of(context).startFloating(Container());
-                            },
-                          ),
-                          MaterialButton(
-                            child: Text('close'),
-                            color: Colors.red,
-                            onPressed: () {
-                              _detailsOverlayEntry.remove();
-                              // Navigator.pop(context);
-                            },
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                );
-              });
-              _overlayState.insert(_detailsOverlayEntry);
-            },
+            onPressed: _onAddOverlayEntry,
             color: Theme.of(context).primaryColor,
-            visualDensity: VisualDensity.compact,
-            padding: EdgeInsets.zero,
-            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            child: Text("open pip"),
+            child: Text("Abrir PIP Mode"),
           ),
-          SizedBox(height: 100.0),
           FlatButton(
             onPressed: () {
-              // Modular.to.pushNamed("/home");
-              Navigator.of(context).pushNamed("/second");
-              print("aasdasd");
+              Navigator.pushNamed(context, "/second");
             },
             color: Theme.of(context).primaryColor,
-            visualDensity: VisualDensity.compact,
-            padding: EdgeInsets.zero,
-            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            child: Text("Go to home"),
-          ),
-          SizedBox(height: 100.0),
-          FlatButton(
-            onPressed: () {
-              // Modular.to.pushNamed("/home");
-              Navigator.of(context).pushNamed("/video_call");
-              print("aasdasd");
-            },
-            color: Theme.of(context).primaryColor,
-            visualDensity: VisualDensity.compact,
-            padding: EdgeInsets.zero,
-            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            child: Text("Go to video call"),
+            child: Text("Segunda página"),
           ),
         ],
       ),
     );
+  }
+
+  void _onAddOverlayEntry() {
+    _detailsOverlayEntry = OverlayEntry(
+      builder: (context) {
+        return PictureInPicture(
+          builder: (context, isFloating) {
+            return Theme(
+              data: ThemeData(primaryColor: Colors.red),
+              child: Scaffold(
+                appBar: AppBar(
+                  title: Text("PIP MODE"),
+                ),
+                body: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    FlatButton(
+                      onPressed: () {
+                        PictureInPicture.of(context).startFloating();
+                      },
+                      color: Theme.of(context).primaryColor,
+                      child: Text("Ativar PIP Mode"),
+                    ),
+                    FlatButton(
+                      onPressed: () {
+                        _detailsOverlayEntry.remove();
+                      },
+                      color: Theme.of(context).primaryColor,
+                      child: Text("Fechar PIP Mode"),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+    _overlayState.insert(_detailsOverlayEntry);
   }
 }

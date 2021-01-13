@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:picture_in_picture/functions/functions.dart';
 
 import '../enums/enums.dart';
+import '../functions/functions.dart';
 
 class PictureInPicture extends StatefulWidget {
   final PIPViewCorner initialCorner;
   final double floatingWidth;
   final double floatingHeight;
+  final int animationDuration;
   final bool avoidKeyboard;
 
   final Widget Function(
@@ -20,6 +21,7 @@ class PictureInPicture extends StatefulWidget {
     @required this.builder,
     this.initialCorner: PIPViewCorner.topRight,
     this.floatingWidth,
+    this.animationDuration: 500,
     this.floatingHeight,
     this.avoidKeyboard: true,
   }) : super(key: key);
@@ -34,30 +36,33 @@ class PictureInPicture extends StatefulWidget {
 
 class _PictureInPictureState extends State<PictureInPicture>
     with TickerProviderStateMixin {
-  OverlayEntry _detailsOverlayEntry;
-  OverlayState _overlayState;
-
   AnimationController _toggleFloatingAnimationController;
   AnimationController _dragAnimationController;
   Map<PIPViewCorner, Offset> _offsets = {};
   Offset _dragOffset = Offset.zero;
   bool _isDragging = false;
+  bool _isFloating = false;
   PIPViewCorner _corner;
-  Widget _bottomView;
 
   @override
   void initState() {
-    _overlayState = Overlay.of(context);
     super.initState();
     _corner = widget.initialCorner;
     _toggleFloatingAnimationController = AnimationController(
-      duration: Duration(milliseconds: 500),
+      duration: Duration(milliseconds: widget.animationDuration),
       vsync: this,
     );
     _dragAnimationController = AnimationController(
-      duration: Duration(milliseconds: 500),
+      duration: Duration(milliseconds: widget.animationDuration),
       vsync: this,
     );
+  }
+
+  @override
+  void dispose() {
+    _toggleFloatingAnimationController.dispose();
+    _dragAnimationController.dispose();
+    super.dispose();
   }
 
   @override
@@ -67,14 +72,15 @@ class _PictureInPictureState extends State<PictureInPicture>
     if (widget.avoidKeyboard) {
       windowPadding += mediaQuery.viewInsets;
     }
-    final isFloating = _bottomView != null;
 
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth;
         final height = constraints.maxHeight;
+
         double floatingWidth = widget.floatingWidth;
         double floatingHeight = widget.floatingHeight;
+
         if (floatingWidth == null && floatingHeight != null) {
           floatingWidth = width / height * floatingHeight;
         }
@@ -88,8 +94,8 @@ class _PictureInPictureState extends State<PictureInPicture>
 
         _updateCornersOffsets(
           spaceSize: fullWidgetSize,
-          widgetSize: floatingWidgetSize,
           windowPadding: windowPadding,
+          widgetSize: floatingWidgetSize,
         );
 
         final calculatedOffset = _offsets[_corner];
@@ -109,9 +115,7 @@ class _PictureInPictureState extends State<PictureInPicture>
                 _dragAnimationController,
               ]),
               builder: (context, child) {
-                final animationCurve = CurveTween(
-                  curve: Curves.easeInOutQuad,
-                );
+                final animationCurve = CurveTween(curve: Curves.easeInOutQuad);
                 final dragAnimationValue = animationCurve.transform(
                   _dragAnimationController.value,
                 );
@@ -129,10 +133,8 @@ class _PictureInPictureState extends State<PictureInPicture>
                             ? dragAnimationValue
                             : toggleFloatingAnimationValue,
                       );
-                final borderRadius = Tween<double>(
-                  begin: 0,
-                  end: 10,
-                ).transform(toggleFloatingAnimationValue);
+                final borderRadius = Tween<double>(begin: 0, end: 15)
+                    .transform(toggleFloatingAnimationValue);
                 final width = Tween<double>(
                   begin: fullWidgetSize.width,
                   end: floatingWidgetSize.width,
@@ -149,31 +151,34 @@ class _PictureInPictureState extends State<PictureInPicture>
                   left: floatingOffset.dx,
                   top: floatingOffset.dy,
                   child: GestureDetector(
-                    onPanStart: isFloating ? _onPanStart : null,
-                    onPanUpdate: isFloating ? _onPanUpdate : null,
-                    onPanCancel: isFloating ? _onPanCancel : null,
-                    onPanEnd: isFloating ? _onPanEnd : null,
-                    onTap: isFloating ? stopFloating : null,
-                    child: Material(
-                      elevation: 10,
-                      borderRadius: BorderRadius.circular(borderRadius),
-                      child: Container(
-                        clipBehavior: Clip.antiAlias,
-                        decoration: BoxDecoration(
-                          color: Colors.transparent,
-                          borderRadius: BorderRadius.circular(borderRadius),
-                        ),
-                        width: width,
-                        height: height,
-                        child: Transform.scale(
-                          scale: scale,
-                          child: OverflowBox(
-                            maxHeight: fullWidgetSize.height,
-                            maxWidth: fullWidgetSize.width,
-                            child: IgnorePointer(
-                              ignoring: isFloating,
-                              child: child,
-                            ),
+                    onPanStart: _isFloating ? _onPanStart : null,
+                    onPanUpdate: _isFloating ? _onPanUpdate : null,
+                    onPanCancel: _isFloating ? _onPanCancel : null,
+                    onPanEnd: _isFloating ? _onPanEnd : null,
+                    onTap: _isFloating ? stopFloating : null,
+                    child: Container(
+                      clipBehavior: Clip.antiAlias,
+                      decoration: BoxDecoration(
+                        boxShadow: <BoxShadow>[
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.25),
+                            spreadRadius: 1.0,
+                            blurRadius: 10.0,
+                          ),
+                        ],
+                        color: Colors.transparent,
+                        borderRadius: BorderRadius.circular(borderRadius),
+                      ),
+                      width: width,
+                      height: height,
+                      child: Transform.scale(
+                        scale: scale,
+                        child: OverflowBox(
+                          maxHeight: fullWidgetSize.height,
+                          maxWidth: fullWidgetSize.width,
+                          child: IgnorePointer(
+                            ignoring: _isFloating,
+                            child: child,
                           ),
                         ),
                       ),
@@ -182,22 +187,18 @@ class _PictureInPictureState extends State<PictureInPicture>
                 );
               },
               child: Builder(
-                builder: (context) => widget.builder(context, isFloating),
+                builder: (context) => widget.builder(context, _isFloating),
               ),
             ),
-            // if (isFloating)
-            //   IgnorePointer(
-            //     ignoring: isFloating,
-            //     child: Navigator(
-            //       onGenerateRoute: (settings) {
-            //         return MaterialPageRoute(builder: (_) => _bottomView);
-            //       },
-            //     ),
-            //   ),
           ],
         );
       },
     );
+  }
+
+  bool _isAnimating() {
+    return _toggleFloatingAnimationController.isAnimating ||
+        _dragAnimationController.isAnimating;
   }
 
   void _updateCornersOffsets(
@@ -209,43 +210,28 @@ class _PictureInPictureState extends State<PictureInPicture>
     );
   }
 
-  bool _isAnimating() {
-    return _toggleFloatingAnimationController.isAnimating ||
-        _dragAnimationController.isAnimating;
-  }
-
   void dismissKeyboard(BuildContext context) {
     FocusScope.of(context).requestFocus(FocusNode());
   }
 
-  void startFloating(Widget widget) {
-    if (_isAnimating() || _bottomView != null) return;
+  void startFloating() {
+    if (_isAnimating()) return;
     dismissKeyboard(context);
-    setState(() {
-      _bottomView = widget;
-    });
+    setState(() => _isFloating = true);
     _toggleFloatingAnimationController.forward();
-  } 
+  }
 
   void stopFloating() {
-    if (_isAnimating() || _bottomView == null) return;
+    if (_isAnimating()) return;
     dismissKeyboard(context);
-    _toggleFloatingAnimationController.reverse().whenCompleteOrCancel(() {
-      if (mounted) {
-        setState(() {
-          _bottomView = null;
-        });
-      }
-    });
+    setState(() => _isFloating = false);
+    _toggleFloatingAnimationController.reverse();
   }
 
   void _onPanUpdate(DragUpdateDetails details) {
     if (!_isDragging) return;
     setState(() {
-      _dragOffset = _dragOffset.translate(
-        details.delta.dx,
-        details.delta.dy,
-      );
+      _dragOffset = _dragOffset.translate(details.delta.dx, details.delta.dy);
     });
   }
 
