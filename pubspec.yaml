@@ -1,6 +1,6 @@
 name: picture_in_picture
-description: A new flutter plugin project.
-version: 0.0.1
+description: Pluguin para gerenciamento de PIP Mode em aplicativos Flutter.
+version: 0.0.2
 homepage: "https://www.omnisaude.co/"
 
 environment:
@@ -8,6 +8,8 @@ environment:
   flutter: ">=1.20.0"
 
 dependencies:
+  flutter_modular: ^2.0.1
+
   flutter:
     sdk: flutter
 

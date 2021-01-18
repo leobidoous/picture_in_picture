@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../enums/enums.dart';
-import '../src/corner_distance.dart';
+import '../classes/corner_distance.dart';
 
 PIPViewCorner calculateNearestCorner({
   Offset offset,

@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:picture_in_picture/src/picture_in_picture.dart';
-
+import 'package:picture_in_picture/picture_in_picture.dart';
 import 'home_controller.dart';
 
 class HomePage extends StatefulWidget {
-  final String title;
 
-  const HomePage({Key key, this.title = "Home"}) : super(key: key);
+  const HomePage({Key key}) : super(key: key);
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -30,7 +28,6 @@ class _HomePageState extends ModularState<HomePage, HomeController> {
         title: Text("HOME"),
       ),
       body: Column(
-        mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
