@@ -1,6 +1,6 @@
 name: picture_in_picture
 description: Pluguin para gerenciamento de PIP Mode em aplicativos Flutter.
-version: 0.0.2
+version: 0.0.3
 homepage: "https://www.omnisaude.co/"
 
 environment:
