@@ -1,3 +1,7 @@
+## 0.0.4
+
+* Modularização dos componentes para criação do PIP;
+
 ## 0.0.3
 
 * Fix: Removidos imports inutilizáveis;

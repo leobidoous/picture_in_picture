@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'enums/enums.dart';
-import 'functions/functions.dart';
+import '../enums/enums.dart';
+import '../functions/functions.dart';
 
 class PictureInPicture extends StatefulWidget {
   final PIPViewCorner initialCorner;

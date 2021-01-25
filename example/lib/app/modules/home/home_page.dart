@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:picture_in_picture/picture_in_picture.dart';
+import 'package:picture_in_picture/classes/picture_in_picture.dart';
+import 'package:picture_in_picture/source/pip_mode.dart';
+
 import 'home_controller.dart';
 
 class HomePage extends StatefulWidget {
-
   const HomePage({Key key}) : super(key: key);
 
   @override
@@ -12,12 +13,9 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends ModularState<HomePage, HomeController> {
-  OverlayState _overlayState;
-  OverlayEntry _detailsOverlayEntry;
-
   @override
   void initState() {
-    _overlayState = Overlay.of(context);
+    controller.pipMode = PIPMode(context: context);
     super.initState();
   }
 
@@ -32,7 +30,9 @@ class _HomePageState extends ModularState<HomePage, HomeController> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           FlatButton(
-            onPressed: _onAddOverlayEntry,
+            onPressed: () {
+              controller.pipMode.createPIP(_pictureInPicture());
+            },
             color: Theme.of(context).primaryColor,
             child: Text("Abrir PIP Mode"),
           ),
@@ -48,44 +48,39 @@ class _HomePageState extends ModularState<HomePage, HomeController> {
     );
   }
 
-  void _onAddOverlayEntry() {
-    _detailsOverlayEntry = OverlayEntry(
-      builder: (context) {
-        return PictureInPicture(
-          builder: (context, isFloating) {
-            return Theme(
-              data: ThemeData(primaryColor: Colors.red),
-              child: Scaffold(
-                appBar: AppBar(
-                  title: Text("PIP MODE"),
+  PictureInPicture _pictureInPicture() {
+    return PictureInPicture(
+      builder: (context, isFloating) {
+        return Theme(
+          data: ThemeData(primaryColor: Colors.red),
+          child: Scaffold(
+            appBar: AppBar(
+              title: Text("PIP MODE"),
+            ),
+            body: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                FlatButton(
+                  onPressed: () {
+                    PictureInPicture.of(context).startFloating();
+                  },
+                  color: Theme.of(context).primaryColor,
+                  child: Text("Ativar PIP Mode"),
                 ),
-                body: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    FlatButton(
-                      onPressed: () {
-                        PictureInPicture.of(context).startFloating();
-                      },
-                      color: Theme.of(context).primaryColor,
-                      child: Text("Ativar PIP Mode"),
-                    ),
-                    FlatButton(
-                      onPressed: () {
-                        _detailsOverlayEntry.remove();
-                      },
-                      color: Theme.of(context).primaryColor,
-                      child: Text("Fechar PIP Mode"),
-                    ),
-                  ],
+                FlatButton(
+                  onPressed: () {
+                    controller.pipMode.closePIP();
+                  },
+                  color: Theme.of(context).primaryColor,
+                  child: Text("Fechar PIP Mode"),
                 ),
-              ),
-            );
-          },
+              ],
+            ),
+          ),
         );
       },
     );
-    _overlayState.insert(_detailsOverlayEntry);
   }
 }
